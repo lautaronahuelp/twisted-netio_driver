@@ -16,7 +16,7 @@ class ProtocoloNetio:
         self._token = ""
         self._secuencia = -1
         self._nroserie = ""
-        self._senial = 0
+        self._senial = -1
         self._valor = ""
         self._timestamp = ""
         self._schecker = ""
@@ -39,10 +39,45 @@ class ProtocoloNetio:
 
     def __str__(self):
         salida = "ide=%s|00=%s|" % (self._nroserie, self._timestamp)
+
+        if(self._schecker != ""):
+            salida = "%s01=%s|" % (salida, self._schecker)
+
         if(self._esAck):
             #ide=70710494|00=58388E5E|07|!11D5
             #ide=70710494|00=58389130|07|06=01|!CADD
             salida = salida + "07|"
+            if(self._secuencia != -1):
+                secuenciaSalida = "%x" % (self._secuencia)
+                salida = "%s06=%s|" % (salida, secuenciaSalida.upper().zfill(2))
+        elif(self._esNack):
+            #ide=70710494|00=58388E5E|07|!11D5
+            #ide=70710494|00=58389130|07|06=01|!CADD
+            salida = salida + "08|"
+            if(self._secuencia != -1):
+                secuenciaSalida = "%x" % (self._secuencia)
+                salida = "%s06=%s|" % (salida, secuenciaSalida.upper().zfill(2))
+        else:
+            if(self._senial != -1):
+                senial = "%d" % self._senial
+                salida = "%s03=%s|" % (salida, senial.upper().zfill(2))
+            if(self._hbCuenta != ""):
+                salida = "%s04=%s|" % (salida, self._hbCuenta.upper().zfill(4))
+            if(self._cid != ""):
+                salida = "%s05=%s|" % (salida, self._cid)
+            if(self._progString != ""):
+                salida = "%s09=%s|" % (salida, self._progString)
+            if(self._panelString != ""):
+                salida = "%s10=%s|" % (salida, self._panelString)
+            if(self._ioread != ""):
+                salida = "%s11=%s|" % (salida, self._ioread)
+            if(self._owrite != ""):
+                salida = "%s12=%s|" % (salida, self._owrite)
+            if(self._panelStatus != ""):
+                salida = "%s15=%s|" % (salida, self._panelStatus)
+            if(self._csrSecuencia != -1):
+                secuenciaSalida = "%x" % (self._csrSecuencia)
+                salida = "%s16=%s|" % (salida, secuenciaSalida.upper().zfill(2))
             if(self._secuencia != -1):
                 secuenciaSalida = "%x" % (self._secuencia)
                 salida = "%s06=%s|" % (salida, secuenciaSalida.upper().zfill(2))
