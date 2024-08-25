@@ -94,7 +94,7 @@ class ProtocoloNetio:
 
         if self._stringOriginal != None:
             protocoloLength = len(self._stringOriginal)
-            if protocoloLength >= 18 and self._stringOriginal.startswith("ide") and self._stringOriginal[-5] == "!":
+            if protocoloLength >= 18 and self._stringOriginal.startswith("ide") and self._stringOriginal[-6:-4] == "|!":
                 stringSpliteado = self._stringOriginal.split("!")
                 stringParaCRC = stringSpliteado[0] + "!"
                 bytesString = str.encode(stringParaCRC)
@@ -201,3 +201,9 @@ class ProtocoloNetio:
     
     def setComoAck(self):
         self._esAck = True
+    
+    def setComando(self, comando):
+        self._panelStatus = comando
+    
+    def setParticion(self, particion):
+        self._particion = particion

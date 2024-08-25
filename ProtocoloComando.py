@@ -40,10 +40,19 @@ class ProtocoloComando:
 
         if self._stringOriginal != None:
             protocoloLength = len(self._stringOriginal)
-            if protocoloLength >= 28 and self._stringOriginal.startswith("ide") and self._stringOriginal[-1] == "!":
+            if protocoloLength >= 28 and self._stringOriginal.startswith("ide") and self._stringOriginal[-2:] == "|!":
                     band = True
                     self._stringLimpio = self._stringOriginal
 
         self._valido = band
         
         return self._valido
+    
+    def getNroSerie(self):
+        return self._nroserie
+
+    def getComando(self):
+        return self._kby
+    
+    def getParticion(self):
+        return self._particion

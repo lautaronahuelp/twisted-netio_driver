@@ -1,10 +1,13 @@
 from twisted.internet import protocol, reactor, endpoints
+from twisted.internet.protocol import connectionDone
 from ProtocoloNETIO import ProtocoloNetio
 from ProtocoloComando import ProtocoloComando
 
 class ProtoNetio(protocol.Protocol):
+    
     def __init__(self, dispositivos):
         self._dispositivos = dispositivos
+        self._nroserie = None
 
     def dataReceived(self, data):
         decodeada = data.decode("ascii")
@@ -17,6 +20,7 @@ class ProtoNetio(protocol.Protocol):
             #print(recibido.debugString())
 
             self._dispositivos[recibido.getNroSerie()] = self
+            self._nroserie = recibido.getNroSerie()
             print(self._dispositivos)
             #ide=70710494|00=58388E5C|01=123456|03=74|04=FFFF|!34EF
             #ide=70710494|00=58388E5E|07|!11D5
@@ -31,7 +35,14 @@ class ProtoNetio(protocol.Protocol):
                
         else:
             print("PROTOCOLO INVALIDO")
-    #eliminar al desconectarse el equipo
+
+    def connectionLost(self, reason):
+        if self._nroserie in self._dispositivos:
+            del self._dispositivos[self._nroserie]
+        print(self._dispositivos)
+    
+    def enviarComando(self, comando):
+        self.transport.write(comando.__str__().encode("ascii"))
 
 class ProtoComandos(protocol.DatagramProtocol):
     def __init__(self, driver):
@@ -44,7 +55,15 @@ class ProtoComandos(protocol.DatagramProtocol):
         if comando.procesarString():
             print(comando.debugString())
             print(self._driver._dispositivos)
-            self.transport.write(data, addr)
+            if comando.getNroSerie() in self._driver._dispositivos:
+                self.transport.write(data, addr)
+                ntComando = ProtocoloNetio()
+                ntComando.setNroSerie(comando.getNroSerie())
+                ntComando.setComando(comando.getComando())
+                self._driver._dispositivos[comando.getNroSerie()].enviarComando(ntComando)
+            else:
+                respuesta = "noexiste"
+                self.transport.write(respuesta.encode("ascii"), addr)
         else:
             print("Recibio erróneo")
                
